@@ -87,38 +87,72 @@ const feedFormat = {
     }
   },
 
+  _validateSync(nativeMsg, prevNativeMsg, hmacKey) {
+    let err;
+    if ((err = v.validateShape(nativeMsg))) return err;
+    if ((err = v.validateHmac(hmacKey))) return err;
+    if ((err = v.validateAuthor(nativeMsg))) return err;
+    if ((err = v.validateHash(nativeMsg))) return err;
+    if ((err = v.validateTimestamp(nativeMsg))) return err;
+    if (prevNativeMsg) {
+      if ((err = v.validatePrevious(nativeMsg, prevNativeMsg))) return err;
+      if ((err = v.validateSequence(nativeMsg, prevNativeMsg))) return err;
+    } else {
+      if ((err = v.validateFirstPrevious(nativeMsg))) return err;
+      if ((err = v.validateFirstSequence(nativeMsg))) return err;
+    }
+    if ((err = v.validateOrder(nativeMsg))) return err;
+    if ((err = v.validateContent(nativeMsg))) return err;
+    if ((err = v.validateAsJSON(nativeMsg))) return err;
+    if ((err = v.validateSignature(nativeMsg, hmacKey))) return err;
+  },
+
+  _validateOOOSync(nativeMsg, hmacKey) {
+    let err;
+    if ((err = v.validateShape(nativeMsg))) return err;
+    if ((err = v.validateHmac(hmacKey))) return err;
+    if ((err = v.validateAuthor(nativeMsg))) return err;
+    if ((err = v.validateHash(nativeMsg))) return err;
+    if ((err = v.validateTimestamp(nativeMsg))) return err;
+    if ((err = v.validateOrder(nativeMsg))) return err;
+    if ((err = v.validateContent(nativeMsg))) return err;
+    if ((err = v.validateAsJSON(nativeMsg))) return err;
+    if ((err = v.validateSignature(nativeMsg, hmacKey))) return err;
+  },
+
   validate(nativeMsg, prevNativeMsg, hmacKey, cb) {
     let err;
-    if ((err = v.validateShape(nativeMsg))) return cb(err);
-    if ((err = v.validateHmac(hmacKey))) return cb(err);
-    if ((err = v.validateAuthor(nativeMsg))) return cb(err);
-    if ((err = v.validateHash(nativeMsg))) return cb(err);
-    if ((err = v.validateTimestamp(nativeMsg))) return cb(err);
-    if (prevNativeMsg) {
-      if ((err = v.validatePrevious(nativeMsg, prevNativeMsg))) return cb(err);
-      if ((err = v.validateSequence(nativeMsg, prevNativeMsg))) return cb(err);
-    } else {
-      if ((err = v.validateFirstPrevious(nativeMsg))) return cb(err);
-      if ((err = v.validateFirstSequence(nativeMsg))) return cb(err);
+    if ((err = feedFormat._validateSync(nativeMsg, prevNativeMsg, hmacKey))) {
+      return cb(err);
     }
-    if ((err = v.validateOrder(nativeMsg))) return cb(err);
-    if ((err = v.validateContent(nativeMsg))) return cb(err);
-    if ((err = v.validateAsJSON(nativeMsg))) return cb(err);
-    if ((err = v.validateSignature(nativeMsg, hmacKey))) return cb(err);
     cb();
   },
 
   validateOOO(nativeMsg, hmacKey, cb) {
     let err;
-    if ((err = v.validateShape(nativeMsg))) return cb(err);
-    if ((err = v.validateHmac(hmacKey))) return cb(err);
-    if ((err = v.validateAuthor(nativeMsg))) return cb(err);
-    if ((err = v.validateHash(nativeMsg))) return cb(err);
-    if ((err = v.validateTimestamp(nativeMsg))) return cb(err);
-    if ((err = v.validateOrder(nativeMsg))) return cb(err);
-    if ((err = v.validateContent(nativeMsg))) return cb(err);
-    if ((err = v.validateAsJSON(nativeMsg))) return cb(err);
-    if ((err = v.validateSignature(nativeMsg, hmacKey))) return cb(err);
+    if ((err = feedFormat._validateOOOSync(nativeMsg, hmacKey))) {
+      return cb(err);
+    }
+    cb();
+  },
+
+  validateBatch(nativeMsgs, prevNativeMsg, hmacKey, cb) {
+    let err;
+    let prev = prevNativeMsg;
+    for (const nativeMsg of nativeMsgs) {
+      err = feedFormat._validateSync(nativeMsg, prev, hmacKey);
+      if (err) return cb(err);
+      prev = nativeMsg;
+    }
+    cb();
+  },
+
+  validateOOOBatch(nativeMsgs, hmacKey, cb) {
+    let err;
+    for (const nativeMsg of nativeMsgs) {
+      err = feedFormat._validateOOOSync(nativeMsg, hmacKey);
+      if (err) return cb(err);
+    }
     cb();
   },
 };
