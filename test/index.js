@@ -9,30 +9,8 @@ const {check} = require('ssb-feed-format');
 const format = require('../format');
 
 test('passes ssb-feed-format', (t) => {
-  t.doesNotThrow(() => {
-    check(format, ssbKeys.generate);
-  });
-  t.end();
-});
-
-test('newNativeMsg output must pass validate()', (t) => {
-  const keys = ssbKeys.generate();
-  const nativeMsg = format.newNativeMsg({
-    keys,
-    content: {
-      type: 'post',
-      text: 'Hello, world!',
-    },
-    timestamp: Date.now(),
-    previous: null,
-    hmacKey: null,
-  });
-  format.validate(nativeMsg, null, null, (err) => {
-    if (err) {
-      t.fail(err);
-    } else {
-      t.pass('validation ok');
-      t.end();
-    }
+  check(format, ssbKeys.generate, (err) => {
+    t.error(err);
+    t.end();
   });
 });
