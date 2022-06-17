@@ -49,7 +49,7 @@ const feedFormat = {
     return ssbKeys.signObj(opts.keys, opts.hmacKey, nativeMsg);
   },
 
-  fromNativeMsg(nativeMsg, encoding) {
+  fromNativeMsg(nativeMsg, encoding = 'js') {
     if (encoding === 'js') {
       return nativeMsg;
     } else if (encoding === 'bipf') {
@@ -60,7 +60,7 @@ const feedFormat = {
     }
   },
 
-  fromDecryptedNativeMsg(plaintextBuf, nativeMsg, encoding) {
+  fromDecryptedNativeMsg(plaintextBuf, nativeMsg, encoding = 'js') {
     if (encoding === 'js') {
       const msgVal = nativeMsg;
       const content = JSON.parse(plaintextBuf.toString('utf8'));
@@ -76,7 +76,7 @@ const feedFormat = {
     }
   },
 
-  toNativeMsg(msg, encoding) {
+  toNativeMsg(msg, encoding = 'js') {
     if (encoding === 'js') {
       return msg;
     } else if (encoding === 'bipf') {
