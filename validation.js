@@ -203,18 +203,79 @@ function validateAsJSON(msgVal) {
   }
 }
 
+function validateSync(nativeMsg, prevNativeMsg, hmacKey) {
+  let err;
+  if ((err = validateShape(nativeMsg))) return err;
+  if ((err = validateHmac(hmacKey))) return err;
+  if ((err = validateAuthor(nativeMsg))) return err;
+  if ((err = validateHash(nativeMsg))) return err;
+  if ((err = validateTimestamp(nativeMsg))) return err;
+  if (prevNativeMsg) {
+    if ((err = validatePrevious(nativeMsg, prevNativeMsg))) return err;
+    if ((err = validateSequence(nativeMsg, prevNativeMsg))) return err;
+  } else {
+    if ((err = validateFirstPrevious(nativeMsg))) return err;
+    if ((err = validateFirstSequence(nativeMsg))) return err;
+  }
+  if ((err = validateOrder(nativeMsg))) return err;
+  if ((err = validateContent(nativeMsg))) return err;
+  if ((err = validateAsJSON(nativeMsg))) return err;
+  if ((err = validateSignature(nativeMsg, hmacKey))) return err;
+}
+
+function validateOOOSync(nativeMsg, hmacKey) {
+  let err;
+  if ((err = validateShape(nativeMsg))) return err;
+  if ((err = validateHmac(hmacKey))) return err;
+  if ((err = validateAuthor(nativeMsg))) return err;
+  if ((err = validateHash(nativeMsg))) return err;
+  if ((err = validateTimestamp(nativeMsg))) return err;
+  if ((err = validateOrder(nativeMsg))) return err;
+  if ((err = validateContent(nativeMsg))) return err;
+  if ((err = validateAsJSON(nativeMsg))) return err;
+  if ((err = validateSignature(nativeMsg, hmacKey))) return err;
+}
+
+function validate(nativeMsg, prevNativeMsg, hmacKey, cb) {
+  let err;
+  if ((err = validateSync(nativeMsg, prevNativeMsg, hmacKey))) {
+    return cb(err);
+  }
+  cb();
+}
+
+function validateOOO(nativeMsg, hmacKey, cb) {
+  let err;
+  if ((err = validateOOOSync(nativeMsg, hmacKey))) {
+    return cb(err);
+  }
+  cb();
+}
+
+function validateBatch(nativeMsgs, prevNativeMsg, hmacKey, cb) {
+  let err;
+  let prev = prevNativeMsg;
+  for (const nativeMsg of nativeMsgs) {
+    err = validateSync(nativeMsg, prev, hmacKey);
+    if (err) return cb(err);
+    prev = nativeMsg;
+  }
+  cb();
+}
+
+function validateOOOBatch(nativeMsgs, hmacKey, cb) {
+  let err;
+  for (const nativeMsg of nativeMsgs) {
+    err = validateOOOSync(nativeMsg, hmacKey);
+    if (err) return cb(err);
+  }
+  cb();
+}
+
 module.exports = {
-  validateShape,
-  validateOrder,
-  validateAuthor,
-  validateSignature,
-  validatePrevious,
-  validateFirstPrevious,
-  validateFirstSequence,
-  validateSequence,
-  validateTimestamp,
-  validateHash,
+  validate,
+  validateBatch,
+  validateOOO,
+  validateOOOBatch,
   validateContent,
-  validateHmac,
-  validateAsJSON,
 };
