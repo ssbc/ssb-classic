@@ -2,52 +2,52 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-only
 
-const Ref = require("ssb-ref");
-const ssbKeys = require("ssb-keys");
-const isCanonicalBase64 = require("is-canonical-base64");
-const getMsgId = require("./get-msg-id");
+const Ref = require('ssb-ref');
+const ssbKeys = require('ssb-keys');
+const isCanonicalBase64 = require('is-canonical-base64');
+const getMsgId = require('./get-msg-id');
 
-const isSignatureRx = isCanonicalBase64("", "\\.sig.\\w+");
+const isSignatureRx = isCanonicalBase64('', '\\.sig.\\w+');
 
 function validateShape(msgVal) {
-  if (!msgVal || typeof msgVal !== "object") {
-    return new Error("invalid message: not a classic msg");
+  if (!msgVal || typeof msgVal !== 'object') {
+    return new Error('invalid message: not a classic msg');
   }
-  if (typeof msgVal.author === "undefined") {
-    return new Error("invalid message: must have author");
+  if (typeof msgVal.author === 'undefined') {
+    return new Error('invalid message: must have author');
   }
-  if (typeof msgVal.previous === "undefined") {
-    return new Error("invalid message: must have previous");
+  if (typeof msgVal.previous === 'undefined') {
+    return new Error('invalid message: must have previous');
   }
-  if (typeof msgVal.sequence === "undefined") {
-    return new Error("invalid message: must have sequence");
+  if (typeof msgVal.sequence === 'undefined') {
+    return new Error('invalid message: must have sequence');
   }
-  if (typeof msgVal.timestamp === "undefined") {
-    return new Error("invalid message: must have timestamp");
+  if (typeof msgVal.timestamp === 'undefined') {
+    return new Error('invalid message: must have timestamp');
   }
-  if (typeof msgVal.hash === "undefined") {
-    return new Error("invalid message: must have hash");
+  if (typeof msgVal.hash === 'undefined') {
+    return new Error('invalid message: must have hash');
   }
-  if (typeof msgVal.content === "undefined") {
-    return new Error("invalid message: must have content");
+  if (typeof msgVal.content === 'undefined') {
+    return new Error('invalid message: must have content');
   }
-  if (typeof msgVal.signature === "undefined") {
-    return new Error("invalid message: must have signature");
+  if (typeof msgVal.signature === 'undefined') {
+    return new Error('invalid message: must have signature');
   }
 }
 
 function validateAuthor(msgVal) {
   if (!Ref.isFeedId(msgVal.author)) {
-    return new Error("invalid message: must have author as a sigil ID");
+    return new Error('invalid message: must have author as a sigil ID');
   }
 }
 
 function validateSignature(msgVal, hmacKey) {
   const { signature } = msgVal;
-  if (typeof signature !== "string") {
-    return new Error("invalid message: must have signature as a string");
+  if (typeof signature !== 'string') {
+    return new Error('invalid message: must have signature as a string');
   }
-  if (!signature.endsWith(".sig.ed25519")) {
+  if (!signature.endsWith('.sig.ed25519')) {
     // prettier-ignore
     return new Error('invalid message: signature must end with .sig.ed25519')
   }
@@ -70,25 +70,25 @@ function validateSignature(msgVal, hmacKey) {
 function validateOrder(msgVal) {
   const keys = Object.keys(msgVal);
   if (keys.length !== 7) {
-    return new Error("invalid message: wrong number of object fields");
+    return new Error('invalid message: wrong number of object fields');
   }
   if (
-    keys[0] !== "previous" ||
-    keys[3] !== "timestamp" ||
-    keys[4] !== "hash" ||
-    keys[5] !== "content" ||
-    keys[6] !== "signature"
+    keys[0] !== 'previous' ||
+    keys[3] !== 'timestamp' ||
+    keys[4] !== 'hash' ||
+    keys[5] !== 'content' ||
+    keys[6] !== 'signature'
   ) {
-    return new Error("invalid message: wrong order of object fields");
+    return new Error('invalid message: wrong order of object fields');
   }
   // author and sequence may be swapped.
   if (
     !(
-      (keys[1] === "sequence" && keys[2] === "author") ||
-      (keys[1] === "author" && keys[2] === "sequence")
+      (keys[1] === 'sequence' && keys[2] === 'author') ||
+      (keys[1] === 'author' && keys[2] === 'sequence')
     )
   ) {
-    return new Error("invalid message: wrong order of object fields");
+    return new Error('invalid message: wrong order of object fields');
   }
 }
 
@@ -128,14 +128,14 @@ function validateSequence(msgVal, prevMsgVal) {
 }
 
 function validateTimestamp(msgVal) {
-  if (typeof msgVal.timestamp !== "number") {
+  if (typeof msgVal.timestamp !== 'number') {
     // prettier-ignore
     return new Error('initial message must have timestamp, on feed: ' + msgVal.author);
   }
 }
 
 function validateHash(msgVal) {
-  if (msgVal.hash !== "sha256") {
+  if (msgVal.hash !== 'sha256') {
     // prettier-ignore
     return new Error('invalid message: hash must be sha256, on feed: ' + msgVal.author);
   }
@@ -144,25 +144,25 @@ function validateHash(msgVal) {
 function validateContent(msgVal) {
   const { content } = msgVal;
   if (!content) {
-    return new Error("invalid message: must have content");
+    return new Error('invalid message: must have content');
   }
   if (Array.isArray(content)) {
-    return new Error("invalid message: content must not be an array");
+    return new Error('invalid message: content must not be an array');
   }
-  if (typeof content !== "object" && typeof content !== "string") {
+  if (typeof content !== 'object' && typeof content !== 'string') {
     // prettier-ignore
     return new Error('invalid message: content must be an object or string, on feed: ' + msgVal.author);
   }
   if (
-    typeof content === "string" &&
-    !content.endsWith(".box") &&
-    !content.endsWith(".box2")
+    typeof content === 'string' &&
+    !content.endsWith('.box') &&
+    !content.endsWith('.box2')
   ) {
     // prettier-ignore
     return new Error('invalid message: string content must end with .box or .box2, on feed: ' + msgVal.author);
   }
-  if (typeof content === "object") {
-    if (!content.type || typeof content.type !== "string") {
+  if (typeof content === 'object') {
+    if (!content.type || typeof content.type !== 'string') {
       // prettier-ignore
       return new Error('invalid message: content must have type, on feed: ' + msgVal.author);
     }
@@ -179,19 +179,19 @@ function validateContent(msgVal) {
 
 function validateHmac(hmacKey) {
   if (!hmacKey) return;
-  if (typeof hmacKey !== "string" && !Buffer.isBuffer(hmacKey)) {
-    return new Error("invalid hmac key: must be a string or buffer");
+  if (typeof hmacKey !== 'string' && !Buffer.isBuffer(hmacKey)) {
+    return new Error('invalid hmac key: must be a string or buffer');
   }
   const bytes = Buffer.isBuffer(hmacKey)
     ? hmacKey
-    : Buffer.from(hmacKey, "base64");
+    : Buffer.from(hmacKey, 'base64');
 
-  if (typeof hmacKey === "string" && bytes.toString("base64") !== hmacKey) {
-    return new Error("invalid hmac");
+  if (typeof hmacKey === 'string' && bytes.toString('base64') !== hmacKey) {
+    return new Error('invalid hmac');
   }
 
   if (bytes.length !== 32) {
-    return new Error("invalid hmac, it should have 32 bytes");
+    return new Error('invalid hmac, it should have 32 bytes');
   }
 }
 

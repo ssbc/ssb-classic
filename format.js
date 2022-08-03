@@ -38,7 +38,7 @@ function toPlaintextBuffer(opts) {
 }
 
 function newNativeMsg(opts) {
-  const previous = opts.previous || {key: null, value: {sequence: 0}};
+  const previous = opts.previous || { key: null, value: { sequence: 0 } };
   const nativeMsg = {
     previous: previous.key,
     sequence: previous.value.sequence + 1,
@@ -71,7 +71,7 @@ function fromDecryptedNativeMsg(plaintextBuf, nativeMsg, encoding = 'js') {
     return msgVal;
   } else if (encoding === 'bipf') {
     return bipf.allocAndEncode(
-      fromDecryptedNativeMsg(plaintextBuf, nativeMsg, 'js'),
+      fromDecryptedNativeMsg(plaintextBuf, nativeMsg, 'js')
     );
   } else {
     // prettier-ignore
