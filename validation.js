@@ -163,7 +163,7 @@ function validateContent(msgVal) {
     }
     if (content.length > SIZE_LIMIT) {
       return new Error(
-        'invalid message: string content must be less than 8192 characters. Current size is ' +
+        'invalid message: string content must be at most 8192 characters. Current size is ' +
           content.length
       )
     }
