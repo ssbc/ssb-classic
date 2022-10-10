@@ -184,7 +184,7 @@ function validateContent(msgVal) {
     const size = JSON.stringify(content, null, 2).length
     if (size > SIZE_LIMIT) {
       return new Error(
-        'invalid message: encoded content must be less than 8192 characters. Current size is ' +
+        'invalid message: encoded content must be at most 8192 characters. Current size is ' +
           size
       )
     }
